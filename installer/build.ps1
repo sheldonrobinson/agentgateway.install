@@ -226,9 +226,9 @@ function Invoke-Sign {
 # ---------------------------------------------------------------------------
 $built = @()
 
-# Download-Executable -exeUrl $downloadURL `
-				    # -targetFolder $SourceDir `
-				    # -exeFileName "agentgateway.exe"
+Download-Executable -exeUrl $downloadURL `
+				    -targetFolder $SourceDir `
+				    -exeFileName "agentgateway.exe"
 
 if (-not (Test-Path $SourceDir)) {
     throw "SourceDir not found: $SourceDir`nBuild agentgateway.exe first, or pass -SourceDir."
