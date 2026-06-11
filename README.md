@@ -1,4 +1,4 @@
-# AgentGateway – WiX 3.14 MSI Installer Project
+# AgentGateway – WiX MSI Installer Project
 
 ## Project Structure
 
@@ -34,7 +34,7 @@ AgentGateway/
 
 | Tool                                | Version | Link                                                           |
 |-------------------------------------|---------|----------------------------------------------------------------|
-| WiX Toolset                         | 3.14.x  | https://wixtoolset.org/releases/                               |
+| WiX Toolset                         | 5.0.x   | https://wixtoolset.org/releases/                               |
 | PowerShell                          | 5.1+    | Built-in on Windows 10/11                                      |
 | Windows SDK (optional, for signing) | any     | https://developer.microsoft.com/windows/downloads/windows-sdk/ |
 
