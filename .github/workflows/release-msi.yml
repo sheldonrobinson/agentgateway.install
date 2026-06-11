@@ -1,0 +1,334 @@
+# ============================================================
+#  AgentGateway – MSI Release Workflow (pre-built binary)
+#
+#  Triggers on any tag push matching v* (e.g. v1.2.3)
+#  Can also be run manually via workflow_dispatch.
+#
+#  What it does:
+#    1. Downloads the pre-built AgentGateway.exe from a URL you supply
+#    2. Puts AgentGateway.exe into a staging folder
+#    3. Installs WiX 3.11 via Chocolatey
+#    4. Syncs installer/version.txt with the tag, commits it back
+#    5. Builds per-machine AND per-user MSIs via build.ps1
+#    6. Optionally signs both MSIs (set SIGN_MSI=true + cert secrets)
+#    7. Creates a GitHub Release and uploads both MSIs as assets
+#
+#  Required secrets (Settings → Secrets → Actions):
+#    RELEASE_TOKEN        – fine-grained PAT with Contents: write
+#    AGENTGATEWAY_DOWNLOAD_URL        – direct download URL for the pre-built EXE
+#                          (use a secret if the URL is private/authenticated,
+#                           or hard-code it in env: below if it is public)
+#
+#  Optional signing secrets:
+#    CODESIGN_CERT_BASE64 – PFX certificate encoded as base64
+#    CODESIGN_CERT_PASS   – PFX password
+#    CODESIGN_THUMBPRINT  – SHA-1 thumbprint of the signing cert
+#
+#  env vars you may want to tweak:
+#    SIGN_MSI             – set to 'true' to enable signtool signing
+#    AGENTGATEWAY_EXE_FILENAME    – path inside the ZIP to Goose.exe
+#                          e.g. "bin/Goose.exe" or just "Goose.exe"
+# ============================================================
+
+name: Build & Release MSI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+  # Manual trigger – lets you pass a one-off ZIP URL without changing secrets
+  workflow_dispatch:
+    inputs:
+      zip_url:
+        description: "Direct download URL for the pre-built Goose ZIP"
+        required: true
+      tag_name:
+        description: "Version tag to release as (e.g. v1.2.3)"
+        required: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SIGN_MSI:                 "false"              # flip to 'true' + add cert secrets to sign
+  AGENTGATEWAY_EXE_SUBPATH: "agentgateway-$.exe" # path inside the ZIP; use subdir if needed
+                                                 # e.g. "bin/Goose.exe"
+
+permissions:
+  contents: write
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  #  JOB 1 – Download agentgateway.exe, build MSIs
+  # ──────────────────────────────────────────────────────────
+  build-msi:
+    name: Build MSI packages
+    runs-on: windows-latest
+
+    outputs:
+      version:       ${{ steps.get-version.outputs.version }}
+      short-version: ${{ steps.get-version.outputs.short-version }}
+
+    steps:
+      # ── 1. Checkout installer project ────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      # ── 2. Resolve tag + derive version numbers ───────────
+      #       Tag v1.2.3  →  version: 1.2.3.0 | short: 1.2.3
+      - name: Derive version from tag
+        id: get-version
+        shell: pwsh
+        run: |
+          # Prefer the push-event tag; fall back to workflow_dispatch input
+          $rawTag = if ("${{ github.ref_name }}" -ne "") {
+                      "${{ github.ref_name }}"
+                    } else {
+                      "${{ github.event.inputs.tag_name }}"
+                    }
+
+          $ver   = $rawTag.TrimStart('v')
+          $parts = $ver -split '\.'
+          while ($parts.Count -lt 4) { $parts += '0' }
+
+          $full  = $parts[0..3] -join '.'   # 1.2.3.0
+          $short = $parts[0..2] -join '.'   # 1.2.3
+
+          Write-Host "Tag      : $rawTag"
+          Write-Host "Full ver : $full"
+          Write-Host "Short ver: $short"
+
+          "version=$full"        | Out-File $env:GITHUB_OUTPUT -Append
+          "short-version=$short" | Out-File $env:GITHUB_OUTPUT -Append
+
+          # Keep version.txt in sync (build.ps1 reads it as fallback)
+          Set-Content -Path installer/version.txt -Value $full -NoNewline
+
+      # ── 3. Resolve EXE download URL ───────────────────────
+      #       Priority: workflow_dispatch input > GOOSE_ZIP_URL secret
+      - name: Resolve EXE URL
+        id: exe-url
+        shell: pwsh
+        run: |
+          $url = if ("${{ github.event.inputs.exe_url }}" -ne "") {
+                   "${{ github.event.inputs.exe_url }}"
+                 } else {
+                   "${{ secrets.AGENTGATEWAY_DOWNLOAD_URL }}"
+                 }
+          if ([string]::IsNullOrWhiteSpace($url)) {
+            throw "No DOWNLOAD URL provided. Set the AGENTGATEWAY_DOWNLOAD_URL secret or pass exe_url via workflow_dispatch."
+          }
+          Write-Host "DOWNLOAD URL: $url"
+          "url=$url" | Out-File $env:GITHUB_OUTPUT -Append
+
+      # ── 4. Download pre-built EXE ──────────────────────────
+      - name: Download AgentGateway EXE
+        shell: pwsh
+        run: |
+          $url  = "${{ steps.exe-url.outputs.url }}"
+          $exeSrc = "${{ github.workspace }}\agentgateway.exe"
+
+          Write-Host "Downloading from: $url"
+          Invoke-WebRequest -Uri $url -OutFile $exeSrc -UseBasicParsing
+
+          if (-not (Test-Path $exeSrc)) {
+            throw "Download failed – file not found at $exeSrc"
+          }
+          $size = (Get-Item $exeSrc).Length
+          Write-Host "Downloaded: $([math]::Round($size/1KB, 1)) KB"
+
+          # Copy into a clean staging folder (build.ps1 -SourceDir points here)
+          $null = New-Item -ItemType Directory -Force -Path $staging
+          Copy-Item -Path $exeSrc -Destination (Join-Path $staging "agentgateway.exe")
+          Write-Host "Staged:  $staging\agentgateway.exe"
+
+          # Log the file version embedded in the binary
+          $fv = (Get-Item (Join-Path $staging "agentgateway.exe")).VersionInfo
+          Write-Host "FileVersion in binary: $($fv.FileVersion)"
+
+      # ── 5. Install WiX Toolset 3.11 ───────────────────────
+      - name: Install WiX Toolset 3.11
+        shell: pwsh
+        run: choco install wixtoolset --version 3.11.2 --yes --no-progress
+
+      # ── 6. Build per-machine MSI ──────────────────────────
+      - name: Build per-machine MSI
+        shell: pwsh
+        run: |
+          .\installer\build.ps1 `
+            -Variant  machine `
+            -SourceDir "${{ github.workspace }}\agentgateway-bin" `
+            -OutputDir "${{ github.workspace }}\msi-output"
+
+      # ── 7. Build per-user MSI ─────────────────────────────
+      - name: Build per-user MSI
+        shell: pwsh
+        run: |
+          .\installer\build.ps1 `
+            -Variant  user `
+            -SourceDir "${{ github.workspace }}\agentgateway-bin" `
+            -OutputDir "${{ github.workspace }}\msi-output"
+
+      # ── 8. List build output ──────────────────────────────
+      - name: List MSI output
+        shell: pwsh
+        run: Get-ChildItem "${{ github.workspace }}\msi-output" | Format-Table Name, Length
+
+      # ── 9. (Optional) Import signing certificate ─────────
+      - name: Import code-signing certificate
+        if: env.SIGN_MSI == 'true'
+        shell: pwsh
+        run: |
+          $bytes = [Convert]::FromBase64String("${{ secrets.CODESIGN_CERT_BASE64 }}")
+          $pfx   = "$env:RUNNER_TEMP\codesign.pfx"
+          [IO.File]::WriteAllBytes($pfx, $bytes)
+          Import-PfxCertificate -FilePath $pfx `
+            -CertStoreLocation Cert:\CurrentUser\My `
+            -Password (ConvertTo-SecureString "${{ secrets.CODESIGN_CERT_PASS }}" `
+                       -AsPlainText -Force) | Out-Null
+          Remove-Item $pfx -Force
+          Write-Host "Certificate imported."
+
+      # ── 10. (Optional) Sign both MSIs ─────────────────────
+      - name: Sign MSIs
+        if: env.SIGN_MSI == 'true'
+        shell: pwsh
+        run: |
+          $sv  = "${{ steps.get-version.outputs.short-version }}"
+          $msis = @(
+            "${{ github.workspace }}\msi-output\GooseSetup-$sv.msi",
+            "${{ github.workspace }}\msi-output\GooseSetup-$sv-peruser.msi"
+          )
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" `
+            -Recurse -Filter signtool.exe |
+            Where-Object { $_.FullName -match 'x64' } |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1 -ExpandProperty FullName
+
+          foreach ($msi in $msis) {
+            Write-Host "Signing: $msi"
+            & $signtool sign /fd SHA256 `
+              /sha1 "${{ secrets.CODESIGN_THUMBPRINT }}" `
+              /tr http://timestamp.digicert.com /td SHA256 $msi
+            if ($LASTEXITCODE -ne 0) { throw "Signing failed for $msi" }
+          }
+
+      # ── 11. Commit updated version.txt back to main ───────
+      - name: Commit version.txt
+        shell: pwsh
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          $full = "${{ steps.get-version.outputs.version }}"
+          Set-Content -Path installer/version.txt -Value $full -NoNewline
+          git add installer/version.txt
+
+          $dirty = git status --porcelain
+          if ($dirty) {
+            git commit -m "chore: sync version.txt to $full [skip ci]"
+            git push origin HEAD:${{ github.event.repository.default_branch }}
+            Write-Host "Committed version.txt → $full"
+          } else {
+            Write-Host "version.txt already at $full – nothing to commit."
+          }
+
+      # ── 12. Upload MSIs as workflow artifacts ─────────────
+      - name: Upload MSI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msi-packages
+          path: msi-output/*.msi
+          if-no-files-found: error
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────
+  #  JOB 2 – Create GitHub Release & attach MSIs
+  # ──────────────────────────────────────────────────────────
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-msi
+
+    steps:
+      # ── 1. Download MSIs from Job 1 ───────────────────────
+      - name: Download MSI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: msi-packages
+          path: msi-output/
+
+      - name: List downloaded files
+        run: ls -lh msi-output/
+
+      # ── 2. Checkout for git log ───────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── 3. Auto-generate release notes from git log ───────
+      - name: Generate release notes
+        run: |
+          VERSION="${{ needs.build-msi.outputs.short-version }}"
+          TAG="${{ github.ref_name }}"
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${TAG}$" | head -1)
+
+          if [ -n "$PREV_TAG" ]; then
+            CHANGES=$(git log --oneline "${PREV_TAG}".."${TAG}" \
+              --no-merges --pretty=format:"- %s (%h)" | head -50)
+          else
+            CHANGES="_Initial release._"
+          fi
+
+          cat <<EOF > release_notes.md
+          ## Agentgateway ${VERSION}
+
+          ### Downloads
+          | Package | Scope |
+          |---------|-------|
+          | \`Agentgateway-Setup-${VERSION}.msi\` | Per-machine – installs to \`Program Files\`, requires admin / UAC |
+          | \`Agentgateway-Setup-${VERSION}-peruser.msi\` | Per-user – installs to \`LocalAppData\`, no UAC needed |
+
+          ### Install
+
+          **Silent / unattended (per-machine):**
+          \`\`\`
+          msiexec /i Agentgateway-Setup-${VERSION}.msi /qn
+          \`\`\`
+          **Silent / unattended (per-user):**
+          \`\`\`
+          msiexec /i Agentgateway-Setup-${VERSION}-peruser.msi /qn
+          \`\`\`
+          **Interactive:** double-click either MSI and follow the wizard.
+
+          ### Upgrade / downgrade
+          - Installing a **newer version** automatically removes the old one.
+          - Installing an **older version** over a newer one is blocked with an error.
+
+          ### What changed since ${PREV_TAG:-"the beginning"}
+          ${CHANGES}
+
+          ---
+          *Built from tag \`${TAG}\` · GitHub Actions · $(date -u +"%Y-%m-%d %H:%M UTC")*
+          EOF
+
+      # ── 4. Publish release + upload MSIs ──────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name:   ${{ github.ref_name }}
+          name:       "Agentgateway ${{ needs.build-msi.outputs.short-version }}"
+          body_path:  release_notes.md
+          draft:      false
+          # Tags with a hyphen (v1.0.0-rc1, v2.0.0-beta) become pre-releases
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            msi-output/*.msi
+          token: ${{ secrets.RELEASE_TOKEN }}
+          fail_on_unmatched_files: true

@@ -1,0 +1,403 @@
+binds:
+- port: 15010
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: mcp-registry
+            openapi:
+              host: https://registry.modelcontextprotocol.io
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/mcp-registry-api.json
+          - name: mcp-directory
+            mcp:
+              host: https://mcp.remote-mcp.com
+          statefulMode: stateless
+      name: registry
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15011
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: holidays
+            openapi:
+              host: https://date.nager.at
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/date-nager-api-v3.json
+          statefulMode: stateless
+          prefixMode: always
+      name: calendar
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15012
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: countries
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/countries.json
+              host: https://restcountries.com
+          - name: country-is
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/country-is.json
+              host: https://api.country.is/
+          - name: ip-geolocation
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/ipapi-is.json
+              host: https://api.ipapi.is
+          - name: my-ip
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/myip-com.json
+              host: https://api.myip.com
+          - name: surise-sunset
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/sunrise-sunset.json
+              host: https://api.sunrise-sunset.org
+          - name: uv-index
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/current-uv-index.json
+              host: https://currentuvindex.com/api/v1
+          - name: weather
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/open-meteo.json
+              host: https://api.open-meteo.com
+          statefulMode: stateless
+          prefixMode: always
+      name: location
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15014
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: exa-search
+            mcp:
+              host: https://mcp.exa.ai/mcp
+          - name: rival-search
+            mcp:
+              host: https://RivalSearchMCP.fastmcp.app/mcp
+          statefulMode: stateful
+      name: search
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15015
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: caselaw
+            mcp:
+              host: https://caselaw.patent-space.dev/mcp
+          statefulMode: stateless
+      name: legal
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15016
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: jobicy
+            openapi:
+              host: https://jobicy.com
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/jobicy.json
+          - name: jobrise
+            openapi:
+              host: https://api.joinrise.io
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/jobrise.json
+          - name: myshipi
+            mcp:
+              host: https://mcp.myshipi.com/api/mcp
+          - name: taskrabbit
+            mcp:
+              host: https://mcp.taskrabbit.com/mcp
+          - name: ziprecruiter
+            mcp:
+              host: https://api.ziprecruiter.com/mcp
+          statefulMode: stateful
+      name: careers
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15017
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: debridge
+            mcp:
+              host: https://agents.debridge.com/mcp
+          - name: finmap
+            mcp:
+              host: https://mcp.finmap.org
+          - name: manifold
+            mcp:
+              host: https://api.manifold.markets/v0/mcp
+          - name: shibui-finance
+            mcp:
+              host: https://mcp.shibui.finance/mcp
+          statefulMode: stateful
+      name: investing
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15018
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: frankfurter
+            mcp:
+              host: https://mcp.frankfurter.dev/
+          - name: open-accountants
+            mcp:
+              host: https://www.openaccountants.com/api/mcp
+          - name: nook-wealth
+            mcp:
+              host: https://www.nookwealth.com/api/mcp
+          statefulMode: stateful
+      name: money
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15019
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: ferry-hopper
+            mcp:
+              host: https://mcp.ferryhopper.com/mcp
+          - name: peek
+            mcp:
+              host: https://mcp.peek.com
+          - name: subway-nyc
+            mcp:
+              host: https://subwayinfo.nyc/mcp
+          statefulMode: stateless
+          prefixMode: always
+      name: travel
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15020
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: live-score
+            sse:
+              host: https://livescoremcp.com/sse
+          - name: tweetsave
+            mcp:
+              host: https://mcp.tweetsave.org/mcp
+          statefulMode: stateless
+          prefixMode: always
+      name: sports-media
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15021
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: books
+            openapi:
+              schema:
+                url: https://openlibrary.org/static/openapi.json
+              host: https://openlibrary.org
+          - name: met-museum
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/metmuseum.json
+              host: https://collectionapi.metmuseum.org/public/collection/v1
+          statefulMode: stateless
+          prefixMode: always
+      name: culture
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15023
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: musicbrainz
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/musicbrainz.json
+              host: https://musicbrainz.org/ws/2
+          - name: song-lyrics
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/lrclib.json
+              host: https://lrclib.net
+          - name: tv-movies
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/tvmaze-com.json
+              host: https://api.tvmaze.com
+          statefulMode: stateless
+          prefixMode: always
+      name: tv-music
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 15024
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: astro-docs
+            mcp:
+              host: https://mcp.docs.astro.build/mcp
+          - name: aws-knowledge
+            mcp:
+              host: https://knowledge-mcp.global.api.aws
+          - name: cloudflare-docs
+            sse:
+              host: https://docs.mcp.cloudflare.com/sse
+          - name: deepwiki
+            mcp:
+              host: https://mcp.deepwiki.com/mcp
+          - name: huggingface
+            mcp:
+              host: https://hf.co/mcp
+          - name: javadocs
+            mcp:
+              host: https://www.javadocs.dev/mcp
+          - name: mcp-docs
+            mcp:
+              host: https://gitmcp.io/docs
+          - name: learn-microsoft
+            mcp:
+              host: https://learn.microsoft.com/api/mcp
+          statefulMode: stateless
+          prefixMode: always
+      name: developer
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id

@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+	<Package Name="AgentGateway"
+	         Language="1033"
+	         Version="$(ProductVersion)"
+	         Manufacturer="Konnek Inc"
+	         UpgradeCode="18EB1191-B9FE-4AB1-9ADC-72171D80C5B8"
+	         Scope="$(Scope)"
+	         InstallerVersion="500"
+	         Compressed="yes">
+		<MediaTemplate EmbedCab="yes"
+		               CompressionLevel="high"/>
+		<Property Id="SILENT"
+		          Value="0"/>
+		<Property Id="ARPPRODUCTICON"
+		          Value="AgentGatewayIcon"/>
+		<Property Id="ARPHELPLINK"
+		          Value="https://github.com/agentgateway/agentgateway"/>
+		<Property Id="ARPURLINFOABOUT"
+		          Value="hhttps://github.com/agentgateway/agentgateway"/>
+		<Property Id="WIXUI_INSTALLDIR"
+		          Value="INSTALLFOLDER"/>
+		<Property Id="INSTALLFOLDER"
+		          Secure="yes">
+		<?if $(var.BuildType) = "Machine" ?>
+			<RegistrySearch Id="InstallFolderSearch"
+			                Root="HKLM"
+			                Key="SOFTWARE\Konnek\agentgateway"
+			                Name="InstallPath"
+			                Type="raw"/>
+		<?else ?>
+			<RegistrySearch Id="InstallFolderSearch"
+			                Root="HKLM"
+			                Key="SOFTWARE\Konnek\agentgateway"
+			                Name="InstallPath"
+			                Type="raw"/>
+		<?endif ?>
+		</Property>
+		<!-- ================================================================
+         Upgrade logic
+           - MajorUpgrade handles removal of the old MSI before
+             new files are placed (Schedule=afterInstallInitialize).
+           - AllowSameVersionUpgrades=no blocks same-version reinstalls.
+           - Downgrades are blocked with a user-facing error.
+        ================================================================ -->
+		<MajorUpgrade DowngradeErrorMessage="A newer version of AgentGateway is already installed. Setup will now exit."
+		              Schedule="afterInstallInitialize"
+		              AllowSameVersionUpgrades="no"/>
+		<!-- ================================================================
+         Features
+        ================================================================ -->
+		<Feature Id="ProductFeature"
+		         Title="AgentGateway"
+		         Description="Installs AgentGateway and all required components."
+		         Level="1"
+		         ConfigurableDirectory="INSTALLFOLDER">
+			<ComponentGroupRef Id="ProductComponents"/>
+			<ComponentGroupRef Id="StartMenuComponents"/>
+			<ComponentGroupRef Id="ConfigComponents"/>
+		</Feature>
+		<!-- ================================================================
+         UI
+         When built with -dSILENT=1 (build.ps1 -Silent), WixUI_Minimal
+         is used so no dialogs appear. Otherwise the custom three-step
+         AgentGatewayUI sequence is shown.
+        ================================================================ -->
+		<!-- Use ui:WixUI instead of UIRef -->
+		<ui:WixUI Id="WixUI_Minimal"/>
+		<WixVariable Id="WixUILicenseRtf"
+		             Value="License.rtf"/>
+		<WixVariable Id="WixUIBannerBmp"
+		             Overridable="yes"
+		             Value="bitmaps\banner.bmp"/>
+		<WixVariable Id="WixUIDialogBmp"
+		             Overridable="yes"
+		             Value="bitmaps\dialog.bmp"/>
+	<?if $(BuildType) = "PowerUser" ?>
+		<!-- Per-user scheduled task -->
+		<CustomAction Id="AgentGatewayTask_Create_PU"
+		              Directory="System64Folder"
+		              ExeCommand='schtasks.exe /Create /F /TN "agentgateway LLM Proxy" /TR "[INSTALLFOLDER]agentgateway.exe" /SC ONLOGON'
+		              Execute="deferred"
+		              Return="check"
+		              Impersonate="yes"/>
+		<CustomAction Id="AgentGatewayTask_Remove_PU"
+		              Directory="System64Folder"
+		              ExeCommand='schtasks.exe /Delete /F /TN "agentgateway LLM Proxy"'
+		              Execute="deferred"
+		              Return="ignore"
+		              Impersonate="yes"/>
+		<InstallExecuteSequence>
+			<Custom Action="AgentGatewayTask_Create_PU"
+			        After="InstallFiles"
+			        Condition="NOT Installed OR REINSTALL"/>
+			<Custom Action="AgentGatewayTask_Remove_PU"
+			        Before="RemoveFiles"
+			        Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE"/>
+		</InstallExecuteSequence>
+	<?endif ?>
+	</Package>
+	<Fragment>
+	<?if $(BuildType) = "Machine" ?>
+		<!-- %PROGRAMFILES%\ -->
+		<Directory Id="ProgramFiles64Folder">
+			<Directory Id="KonnekFolder"
+			           Name="Konnek">
+				<Directory Id="INSTALLFOLDER"
+				           Name="agentgateway"/>
+			</Directory>
+		</Directory>
+		<!-- %PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs\ -->
+		<Directory Id="ProgramMenuFolder">
+			<Directory Id="KonnekStartMenuDir"
+			           Name="Konnek"/>
+		</Directory>
+		<!-- %PROGRAMDATA%\Konnek\agentgateway\ – config file for the installing user -->
+		<Directory Id="CommonAppDataFolder">
+			<Directory Id="AppDataKonnek"
+			           Name="Konnek">
+				<Directory Id="AppDataAgentGateway"
+				           Name="agentgateway"/>
+			</Directory>
+		</Directory>
+	<?else?>
+		<!-- %LOCALAPPDATA%\Programs\ -->
+		<Directory Id="LocalAppDataFolder">
+			<Directory Id="LocalPrograms"
+			           Name="Programs">
+				<Directory Id="KonnekFolder"
+				           Name="Konnek">
+					<Directory Id="INSTALLFOLDER"
+					           Name="agentgateway"/>
+				</Directory>
+			</Directory>
+		</Directory>
+		<!-- Per-user Start Menu: %APPDATA%\Microsoft\Windows\Start Menu\Programs\ -->
+		<Directory Id="AppDataFolder">
+			<!-- existing – Start Menu -->
+			<Directory Id="AppDataMicrosoft"
+			           Name="Microsoft">
+				<Directory Id="AppDataWindows"
+				           Name="Windows">
+					<Directory Id="AppDataStartMenu"
+					           Name="Start Menu">
+						<Directory Id="AppDataPrograms"
+						           Name="Programs">
+							<Directory Id="KonnekStartMenuDir"
+							           Name="Konnek"/>
+						</Directory>
+					</Directory>
+				</Directory>
+			</Directory>
+			<!-- ADD – %APPDATA%\Konnek\agentgateway\ for config file -->
+			<Directory Id="AppDataKonnek"
+			           Name="Konnek">
+				<Directory Id="AppDataAgentGateway"
+				           Name="agentgateway"/>
+			</Directory>
+		</Directory>
+	<?endif?>
+	</Fragment>
+	<!-- ================================================================
+       Directory tree  (structure defined in Directory.wxi)
+     ================================================================ -->
+	<!-- ── Main application files ──────────────────────────────────── -->
+	<!-- APP icon -->
+	<Fragment>
+		<Icon Id="AgentGatewayIcon"
+		      SourceFile="icons\agentgateway.ico"/>
+		<Icon Id="HelpIcon"
+		      SourceFile="icons\help.ico"/>
+		<Icon Id="InfoIcon"
+		      SourceFile="icons\info.ico"/>
+		<Icon Id="StartIcon"
+		      SourceFile="icons\start.ico"/>
+		<Icon Id="StopIcon"
+		      SourceFile="icons\stop.ico"/>
+		<Icon Id="SysCtlIcon"
+		      SourceFile="icons\sysctl.ico"/>
+		<Icon Id="UninstallIcon"
+		      SourceFile="icons\uninstall.ico"/>
+		<Icon Id="UserIcon"
+		      SourceFile="icons\user.ico"/>
+	</Fragment>
+	<Fragment>
+		<DirectoryRef Id="INSTALLFOLDER">
+			<Component Id="AgentGatewayExe"
+			           Guid="C870FDBD-77DD-4F18-8026-7347FFCE3A7B">
+				<File Id="AgentGateway_exe"
+				      Name="agentgateway.exe"
+				      Source="$(SourceDir)\agentgateway.exe"
+				      KeyPath="yes"
+				      Checksum="yes"/>
+			</Component>
+			<Component Id="RegistryEntry"
+			           Guid="DCF46890-9DEF-4E12-BED7-9DBB8F9F797A">
+				<?if $(BuildType) = "System" ?>
+				<RegistryKey Root="HKLM"
+				             Key="SOFTWARE\Konnek\agentgateway"
+				             ForceDeleteOnUninstall="yes">
+					<RegistryValue Name="InstallPath"
+					               Type="string"
+					               Value="[INSTALLFOLDER]"
+					               KeyPath="yes"/>
+					<RegistryValue Name="Version"
+					               Type="string"
+					               Value="$(ProductVersion)"/>
+				</RegistryKey>
+				<?else ?>
+				<RegistryKey Root="HKCU"
+				             Key="SOFTWARE\Konnek\agentgateway"
+				             ForceDeleteOnUninstall="yes">
+					<RegistryValue Name="InstallPath"
+					               Type="string"
+					               Value="[INSTALLFOLDER]"
+					               KeyPath="yes"/>
+					<RegistryValue Name="Version"
+					               Type="string"
+					               Value="$(ProductVersion)"/>
+				</RegistryKey>
+			<?endif ?>
+			</Component>
+			<?if $(BuildType) = "System" ?>
+			<Component Id="AgentGatewayService"
+			           Guid="497DA2C7-5161-4E3D-9284-DA14E8B30C8A">
+				<!-- Install the service -->
+				<ServiceInstall Id="AgentGatewayServiceInstaller"
+				                Name="agentgateway"
+				                DisplayName="AgentGateway Background Service"
+				                Description="Runs AgentGateway in background mode"
+				                Type="ownProcess"
+				                Start="auto"
+				                ErrorControl="normal"
+				                Account="LocalSystem">
+					<util:ServiceConfig FirstFailureActionType="restart"
+					                    SecondFailureActionType="restart"
+					                    ThirdFailureActionType="restart"/>
+				</ServiceInstall>
+				<!-- Control service behavior during install/uninstall -->
+				<ServiceControl Id="AgentGatewayServiceControl"
+				                Name="agentgateway"
+				                Start="install"
+				                Stop="both"
+				                Remove="uninstall"
+				                Wait="yes"/>
+				<!-- Registry key for the service -->
+				<RegistryKey Root="HKLM"
+				             Key="SYSTEM\CurrentControlSet\Services\agentgateway">
+					<RegistryValue Name="StartupServiceInstalled"
+					               Type="integer"
+					               Value="1"
+					               KeyPath="yes"/>
+					<RegistryValue Name="InstallPath"
+					               Type="string"
+					               Value="[INSTALLFOLDER]"/>
+					<RegistryValue Name="Version"
+					               Type="string"
+					               Value="$(ProductVersion)"/>
+				</RegistryKey>
+			</Component>
+			<?endif ?>
+		</DirectoryRef>
+	</Fragment>
+	<Fragment>
+		<ComponentGroup Id="ProductComponents">
+			<ComponentRef Id="AgentGatewayExe"/>
+			<ComponentRef Id="RegistryEntry"/>
+			<?if $(BuildType) = "System" ?>
+			<ComponentRef Id="AgentGatewayService"/>
+			<?endif ?>
+		</ComponentGroup>
+	</Fragment>
+	<!-- ── Start Menu shortcuts ─────────────────────────────────────── -->
+	<Fragment>
+		<DirectoryRef Id="KonnekStartMenuDir">
+			<Component Id="StartMenuShortcuts"
+			           Guid="B123498B-9C15-4AB5-A41F-0C532DFB4D95">
+				<util:InternetShortcut Id="WebsiteStartMenuShortcut"
+				                       Name="AgentGateway Admin UI"
+				                       Target="http://localhost:15000/ui"
+				                       Type="url"
+				                       IconFile="icons\sysctl.ico"
+				                       IconIndex="0"/>
+				<?if $(BuildType) = "System" ?>
+				<!-- Start LLM Proxy startmenu shortcut -->
+				<Shortcut Id="StartServiceStartMenuShortcut"
+				          Name="agentgateway LLM Proxy (Administrator)"
+				          Description="Start agentgateway LLM Proxy Service"
+				          Target="[SystemFolder]sc.exe start agentgateway"
+				          WorkingDirectory="INSTALLFOLDER"
+						  Icon="StartIcon"
+						  IconIndex="0"/>
+				<!-- Stop LLM Proxy startmenu shortcut -->
+				<Shortcut Id="StopServiceStartMenuShortcut"
+				          Name="Stop LLM Proxy (Administrator)"
+				          Description="Stop agentgateway LLM Proxy Service"
+				          Target="[SystemFolder]sc.exe stop agentgateway"
+				          WorkingDirectory="INSTALLFOLDER"
+						  Icon="StopIcon"
+						  IconIndex="0"/>
+				<?elseif $(BuildType) = "PowerUser" ?>
+				<Shortcut Id="StartServiceStartMenuShortcut"
+				          Name="agentgateway LLM Proxy"
+				          Description="Start agentgateway LLM Proxy"
+				          Target="[System64Folder]schtasks.exe"
+				          Arguments="/Run /TN &quot;agentgateway LLM Proxy&quot;"
+				          WorkingDirectory="INSTALLFOLDER"
+				          Icon="StartIcon"
+						  IconIndex="0"/>
+				<Shortcut Id="StopServiceStartMenuShortcut"
+				          Name="Stop LLM Proxy"
+				          Description="Stop agentgateway LLM Proxy"
+				          Target="[System64Folder]schtasks.exe"
+				          Arguments="/End /TN &quot;agentgateway LLM Proxy&quot;"
+				          WorkingDirectory="INSTALLFOLDER"
+				          Icon="StopIcon"
+						  IconIndex="0"/>
+						  <?else ?>
+				<Shortcut Id="StartServiceStartMenuShortcut"
+				          Name="agentgateway LLM Proxy"
+				          Description="Launch agentgateway LLM Proxy"
+				          Target="[INSTALLFOLDER]agentgateway.exe"
+				          WorkingDirectory="INSTALLFOLDER"
+				          Icon="AgentGatewayIcon" 
+						  IconIndex="0" />	  
+				<?endif ?>
+				<util:InternetShortcut Id="AgentGatewayDocsStartMenuShortcut"
+				                       Name="AgentGateway Docs"
+				                       Target="https://agentgateway.dev/docs/standalone/latest/"
+				                       Type="url"
+				                       IconFile="icons\help.ico"
+				                       IconIndex="0"/>
+				<Shortcut Id="AgentGatewayUninstallShortcut"
+				          Name="Uninstall AgentGateway"
+				          Description="Remove AgentGateway from this computer"
+				          Target="[SystemFolder]msiexec.exe"
+				          Arguments="/x [ProductCode]"
+						  Icon="UninstallIcon"
+						  IconIndex="0"/>
+				<RemoveFolder Id="CleanUpShortCuts"
+				              Directory="KonnekStartMenuDir"
+				              On="uninstall"/>
+				<?if $(BuildType) = "Machine" ?>
+				<RegistryValue Root="HKLM"
+				               Key="SOFTWARE\Konnek\agentgateway\StartMenu"
+				               Name="installed"
+				               Type="integer"
+				               Value="1"
+				               KeyPath="yes"/>
+				<?else ?>
+				<RegistryValue Root="HKCU"
+				               Key="SOFTWARE\Konnek\agentgateway\StartMenu"
+				               Name="installed"
+				               Type="integer"
+				               Value="1"
+				               KeyPath="yes"/>
+				<?endif ?>
+			</Component>
+		</DirectoryRef>
+	</Fragment>
+	<Fragment>
+		<ComponentGroup Id="StartMenuComponents">
+			<ComponentRef Id="StartMenuShortcuts"/>
+		</ComponentGroup>
+	</Fragment>
+	<!-- ── Configuration component ──────────────────────────── -->
+	<Fragment>
+		<DirectoryRef Id="AppDataAgentGateway">
+			<Component Id="AgentGatewayConfig"
+			           Guid="C5992200-34A5-4FAC-B670-2A148302AFA6"
+			           NeverOverwrite="yes">
+				<File Id="AgentGatewayConfigYaml"
+				      Name="gateway.yml"
+				      Source="config\gateway.yml"
+				      KeyPath="yes"/>
+				<RemoveFolder Id="RemoveProgramDataAgentGatewayConfig"
+				              Directory="AppDataAgentGateway"
+				              On="uninstall"/>
+				<RemoveFolder Id="RemoveAppDataKonnek"
+				              Directory="AppDataKonnek"
+				              On="uninstall"/>
+			</Component>
+			<Component Id="SetEnvironmentVariables"
+			           Guid="92CE3054-1DEB-4751-84E4-568BB63DFA45">
+					   <?if $(BuildType) = "Machine" ?>
+				<Environment Id="LocalXdsPath"
+				             Name="LOCAL_XDS_PATH"
+				             Value="%PROGRAMDATA%\Konnek\agentgateway\gateway.yml"
+				             Permanent="no"
+				             Action="create"
+				             System="yes"/>
+						<?else ?>
+				<Environment Id="LocalXdsPath"
+				             Name="LOCAL_XDS_PATH"
+				             Value="%APPDATA%\Konnek\agentgateway\gateway.yml"
+				             Permanent="no"
+				             Action="create"/>
+					<?endif ?>
+			</Component>
+		</DirectoryRef>
+	</Fragment>
+	<Fragment>
+		<ComponentGroup Id="ConfigComponents">
+			<ComponentRef Id="AgentGatewayConfig"/>
+			<ComponentRef Id="SetEnvironmentVariables"/>
+		</ComponentGroup>
+	</Fragment>
+</Wix>
