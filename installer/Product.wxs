@@ -69,13 +69,11 @@
 		<!-- Use ui:WixUI instead of UIRef -->
 		<ui:WixUI Id="WixUI_Minimal"/>
 		<WixVariable Id="WixUILicenseRtf"
-		             Value="License.rtf"/>
+		             Value="$(LicenseFile)"/>
 		<WixVariable Id="WixUIBannerBmp"
-		             Overridable="yes"
-		             Value="bitmaps\banner.bmp"/>
+		             Value="$(BitmapDir)\banner.bmp"/>
 		<WixVariable Id="WixUIDialogBmp"
-		             Overridable="yes"
-		             Value="bitmaps\dialog.bmp"/>
+		             Value="$(BitmapDir)\dialog.bmp"/>
 	<?if $(BuildType) = "PowerUser" ?>
 		<!-- Per-user scheduled task -->
 		<CustomAction Id="AgentGatewayTask_Create_PU"
@@ -168,21 +166,21 @@
 	<!-- APP icon -->
 	<Fragment>
 		<Icon Id="AgentGatewayIcon"
-		      SourceFile="icons\agentgateway.ico"/>
+		      SourceFile="$(IconDir)\agentgateway.ico"/>
 		<Icon Id="HelpIcon"
-		      SourceFile="icons\help.ico"/>
+		      SourceFile="$(IconDir)\help.ico"/>
 		<Icon Id="InfoIcon"
-		      SourceFile="icons\info.ico"/>
+		      SourceFile="$(IconDir)\info.ico"/>
 		<Icon Id="StartIcon"
-		      SourceFile="icons\start.ico"/>
+		      SourceFile="$(IconDir)\start.ico"/>
 		<Icon Id="StopIcon"
-		      SourceFile="icons\stop.ico"/>
+		      SourceFile="$(IconDir)\stop.ico"/>
 		<Icon Id="SysCtlIcon"
-		      SourceFile="icons\sysctl.ico"/>
+		      SourceFile="$(IconDir)\sysctl.ico"/>
 		<Icon Id="UninstallIcon"
-		      SourceFile="icons\uninstall.ico"/>
+		      SourceFile="$(IconDir)\uninstall.ico"/>
 		<Icon Id="UserIcon"
-		      SourceFile="icons\user.ico"/>
+		      SourceFile="$(IconDir)\user.ico"/>
 	</Fragment>
 	<Fragment>
 		<DirectoryRef Id="INSTALLFOLDER">
@@ -280,9 +278,7 @@
 				<util:InternetShortcut Id="WebsiteStartMenuShortcut"
 				                       Name="AgentGateway Admin UI"
 				                       Target="http://localhost:15000/ui"
-				                       Type="url"
-				                       IconFile="icons\sysctl.ico"
-				                       IconIndex="0"/>
+				                       Type="url" />
 				<?if $(BuildType) = "System" ?>
 				<!-- Start LLM Proxy startmenu shortcut -->
 				<Shortcut Id="StartServiceStartMenuShortcut"
@@ -329,9 +325,7 @@
 				<util:InternetShortcut Id="AgentGatewayDocsStartMenuShortcut"
 				                       Name="AgentGateway Docs"
 				                       Target="https://agentgateway.dev/docs/standalone/latest/"
-				                       Type="url"
-				                       IconFile="icons\help.ico"
-				                       IconIndex="0"/>
+				                       Type="url" />
 				<Shortcut Id="AgentGatewayUninstallShortcut"
 				          Name="Uninstall AgentGateway"
 				          Description="Remove AgentGateway from this computer"
@@ -373,7 +367,7 @@
 			           NeverOverwrite="yes">
 				<File Id="AgentGatewayConfigYaml"
 				      Name="gateway.yml"
-				      Source="config\gateway.yml"
+				      Source="$(ConfigDir)\gateway.yml"
 				      KeyPath="yes"/>
 				<RemoveFolder Id="RemoveProgramDataAgentGatewayConfig"
 				              Directory="AppDataAgentGateway"
