@@ -111,16 +111,15 @@ jobs:
         run: |
           $sv  = "${{ steps.get-version.outputs.short-version }}"
           $targetFolder  = "${{ github.workspace }}\agentgateway-bin"
-
-
-          $downloadUrl = "https://github.com/agentgateway/agentgateway/releases/download/v{0}/agentgateway-windows-amd64.exe" -f $sv 
           
+          
+          $downloadUrl = "https://github.com/agentgateway/agentgateway/releases/download/v{0}/agentgateway-windows-amd64.exe" -f $sv 
           
           # clean target
           if (Test-Path $targetFolder) { Remove-Item "$targetFolder\*" -Recurse -Force }
           
           # Ensure target folder exists
-		  New-Item -Path $targetFolder -ItemType Directory -Force | Out-Null
+          New-Item -Path $targetFolder -ItemType Directory -Force | Out-Null
           
           $exeSrc = Join-Path $targetFolder "agentgateway.exe"
           
@@ -128,7 +127,7 @@ jobs:
           Write-Host "Downloading Executable from $downloadUrl ..."
           Invoke-WebRequest -Uri $downloadUrl -OutFile $exeSrc -UseBasicParsing
           
-
+          
           if (-not (Test-Path $exeSrc)) {
             throw "Download failed – file not found at $exeSrc"
           }
@@ -149,7 +148,7 @@ jobs:
            $ConfigDir  = "${{ github.workspace }}\installer\config"
            $BitmapDir  = "${{ github.workspace }}\installer\bitmaps"
            $LicenseFile  = "${{ github.workspace }}\installer\License.rtf"
-
+           
            
            $Outfile  = "agentgateway-superuser-{0}.msi" -f $ShortVer
            $OutputMsi = Join-Path $OutputDir  $Outfile
@@ -185,7 +184,7 @@ jobs:
            $ConfigDir  = "${{ github.workspace }}\installer\config"
            $BitmapDir  = "${{ github.workspace }}\installer\bitmaps"
            $LicenseFile  = "${{ github.workspace }}\installer\License.rtf"
-
+           
            
            $Outfile  = "agentgateway-enduser-{0}.msi" -f $ShortVer
            $OutputMsi = Join-Path $OutputDir  $Outfile
@@ -212,7 +211,7 @@ jobs:
       - name: List MSI output
         shell: pwsh
         run: Get-ChildItem "${{ github.workspace }}\msi-output" | Format-Table Name, Length
-
+        
       # ── 9. (Optional) Import signing certificate ─────────
       - name: Import code-signing certificate
         if: env.SIGN_MSI == 'true'
@@ -227,7 +226,7 @@ jobs:
                        -AsPlainText -Force) | Out-Null
           Remove-Item $pfx -Force
           Write-Host "Certificate imported."
-
+          
       # ── 10. (Optional) Sign both MSIs ─────────────────────
       - name: Sign MSIs
         if: env.SIGN_MSI == 'true'
@@ -251,7 +250,7 @@ jobs:
               /tr http://timestamp.digicert.com /td SHA256 $msi
             if ($LASTEXITCODE -ne 0) { throw "Signing failed for $msi" }
           }
-
+          
       # ── 11. Commit updated version.txt back to main ───────
       - name: Commit version.txt
         shell: pwsh
@@ -271,7 +270,7 @@ jobs:
           } else {
             Write-Host "version.txt already at $full – nothing to commit."
           }
-
+          
       # ── 12. Upload MSIs as workflow artifacts ─────────────
       - name: Upload MSI artifacts
         uses: actions/upload-artifact@v4
@@ -282,7 +281,7 @@ jobs:
             msi-output/user/agentgateway-enduser-*.msi
           if-no-files-found: error
           retention-days: 7
-
+          
   # ──────────────────────────────────────────────────────────
   #  JOB 2 – Create GitHub Release & attach MSIs
   # ──────────────────────────────────────────────────────────
@@ -290,7 +289,7 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: build-msi
-
+    
     steps:
       # ── 1. Download MSIs from Job 1 ───────────────────────
       - name: Download MSI artifacts
