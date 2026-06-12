@@ -26,13 +26,11 @@
 #
 #  env vars you may want to tweak:
 #    SIGN_MSI             – set to 'true' to enable signtool signing
-#    AGENTGATEWAY_EXE_FILENAME    – path inside the ZIP to Goose.exe
-#                          e.g. "bin/Goose.exe" or just "Goose.exe"
 # ============================================================
 
 name: Build & Release MSI
-
 on:
+  workflow_dispatch: # Enable manual triggering
   push:
     tags:
       - "v*"
@@ -43,8 +41,6 @@ concurrency:
 
 env:
   SIGN_MSI:                 "false"              # flip to 'true' + add cert secrets to sign
-  AGENTGATEWAY_EXE_SUBPATH: "agentgateway-$.exe" # path inside the ZIP; use subdir if needed
-                                                 # e.g. "bin/Goose.exe"
 
 permissions:
   contents: write
