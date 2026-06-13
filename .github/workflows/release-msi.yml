@@ -79,8 +79,6 @@ jobs:
                       (Get-Content $vFile -Raw).Trim()
                     } else { "1.0.0.0" }
 
-          $rawTag = if (Test-Path $vFile) { (Get-Content $vFile -Raw).Trim() } else { "1.0.0.0" }
-
           $ver   = $rawTag.TrimStart('v')
           $parts = $ver -split '\.'
           while ($parts.Count -lt 4) { $parts += '0' }
@@ -94,21 +92,19 @@ jobs:
 
           "version=$full"        | Out-File $env:GITHUB_OUTPUT -Append
           "short-version=$short" | Out-File $env:GITHUB_OUTPUT -Append
-
+          
       # ── 3. Install dotnet ───────────────────────
       - name: Install dotnet
         shell: pwsh
         run: |
             choco install dotnet-sdk --version 9.0.314 --yes --no-progress
-
+            
       # ── 4. Install WiX Toolset and Accept Eula ───────────────────────
       - name: Install wix
-        shell: pwsh
         run: |
             dotnet tool install --global wix --version 5.0.2
             wix extension add -g WixToolset.Util.wixext/5.0.2
             wix extension add -g WixToolset.UI.wixext/5.0.2
-
 
       # ── 5. Download pre-built EXE ──────────────────────────
       - name: Download AgentGateway EXE
@@ -215,7 +211,7 @@ jobs:
       # ── 8. List build output ──────────────────────────────
       - name: List MSI output
         shell: pwsh
-        run: Get-ChildItem "${{ github.workspace }}\msi-output" | Format-Table Name, Length
+        run: Get-ChildItem "${{ github.workspace }}\msi-output\**\*.msi" | Format-Table Name, Length
         
       # ── 9. (Optional) Import signing certificate ─────────
       - name: Import code-signing certificate
@@ -281,9 +277,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: msi-packages
-          path: |
-            msi-output/machine/agentgateway-superuser-*.msi
-            msi-output/user/agentgateway-enduser-*.msi
+          path: msi-output/
           if-no-files-found: error
           retention-days: 7
           
@@ -296,21 +290,23 @@ jobs:
     needs: build-msi
     
     steps:
-      # ── 1. Download MSIs from Job 1 ───────────────────────
-      - name: Download MSI artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: msi-packages
-          path: ${{ github.workspace }}/msi-output/
-
-      - name: List downloaded files
-        run: find "$(pwd)" -type f -name "*.msi"
-
-      # ── 2. Checkout for git log ───────────────────────────
+      # ── 1. Checkout for git log ───────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # ── 2. Download MSIs from Job 1 ───────────────────────    
+      - name: Download MSI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: msi-packages
+          path: msi-output/
+          merge-multiple: true
+          repository: ${{ github.repository }}
+          run-id: ${{ github.run_id }}
+          
+      - name: List downloaded files
+        run: find "$(pwd)" -type f -name "*.msi"
 
       # ── 3. Auto-generate release notes from git log ───────
       - name: Generate release notes
@@ -327,7 +323,7 @@ jobs:
           fi
 
           cat <<EOF > release_notes.md
-          ## Agentgateway ${VERSION}
+          ## agentgateway ${VERSION}
 
           ### Downloads
           | Package | Scope |
@@ -368,8 +364,7 @@ jobs:
           draft:      false
           # Tags with a hyphen (v1.0.0-rc1, v2.0.0-beta) become pre-releases
           prerelease: ${{ contains(github.ref_name, '-') }}
-          files: |
-            ${{ github.workspace }}/msi-output/machine/agentgateway-superuser-${{ needs.build-msi.outputs.short-version }}.msi
-            ${{ github.workspace }}/msi-output/user/agentgateway-enduser-${{ needs.build-msi.outputs.short-version }}.msi
+          files: msi-output/**/*.msi
           token: ${{ secrets.RELEASE_TOKEN }}
           fail_on_unmatched_files: true
+
