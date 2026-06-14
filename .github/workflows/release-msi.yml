@@ -93,11 +93,14 @@ jobs:
           "version=$full"        | Out-File $env:GITHUB_OUTPUT -Append
           "short-version=$short" | Out-File $env:GITHUB_OUTPUT -Append
           
+          # Keep version.txt in sync (build.ps1 reads it as fallback)
+          Set-Content -Path installer/version.txt -Value $rawTag -NoNewline
+          
       # ── 3. Install dotnet ───────────────────────
-      - name: Install dotnet
-        shell: pwsh
-        run: |
-            choco install dotnet-sdk --version 9.0.314 --yes --no-progress
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
             
       # ── 4. Install WiX Toolset and Accept Eula ───────────────────────
       - name: Install wix
