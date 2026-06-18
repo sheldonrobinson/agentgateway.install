@@ -83,18 +83,13 @@ $iconDir = Join-Path $PSScriptRoot "icons"
 #   1. Read FileVersion from AgentGateway.exe   (preferred)
 #   2. Fall back to version.txt          (used during development)
 # ---------------------------------------------------------------------------
-$agentgatewayExe = Join-Path $SourceDir "agentgateway.exe"
-# if (Test-Path $agentgatewayExe) {
-#    $fv      = (Get-Item $agentgatewayExe).VersionInfo.FileVersionRaw
-#    $version = "$($fv.Major).$($fv.Minor).$($fv.Build).$($fv.Revision)"
-#} else {
-    $vFile   = Join-Path $PSScriptRoot "version.txt"
-    $version = if (Test-Path $vFile) { (Get-Content $vFile -Raw).Trim() } else { "1.0.0.0" }
-    Write-Warning "AgentGateway.exe not found in SourceDir – using version $version from version.txt."
-#}
+
+$vFile   = Join-Path $PSScriptRoot "version.txt"
+$version = if (Test-Path $vFile) { (Get-Content $vFile -Raw).Trim() } else { "1.0.0.0" }
 
 # Short version for MSI filename (drop 4th field)
-$shortVer = ($version -split '\.')[ 0..2 ] -join '.'
+$fullVersion = $version.TrimStart('v')
+$shortVer = ($fullVersion -split '\.')[ 0..2 ] -join '.'
 
 $ghRepo      = "agentgateway/agentgateway"
 $downloadUrl = "https://github.com/{0}/releases/download/v{1}/agentgateway-windows-amd64.exe" -f $ghRepo, $shortVer # URL of the ZIP file
@@ -178,11 +173,17 @@ function Invoke-WixBuild {
 	Write-Host "[dotnet] Compiling $(Split-Path $WixProject -Leaf) ..." -ForegroundColor DarkCyan
 
 	$ProductWxs 	= Join-Path $PSScriptRoot "Product.wxs"
+    
+    $IconDir 	= Join-Path $PSScriptRoot "icons"
+    $ConfigDir 	= Join-Path $PSScriptRoot "config"
+    $BitmapDir 	= Join-Path $PSScriptRoot "bitmaps"
+    $LicenseFile 	= Join-Path $PSScriptRoot "License.rtf"
 	
 	Write-Host "[wix] Compiling $(Split-Path $ProductWxs -Leaf) ..." -ForegroundColor DarkCyan
 	wix build -arch "x64" -outputtype "Package" -culture "en-US" -b $SourceDir -out $OutputMsi `
 			  -intermediatefolder $BuildDir -src $ProductWxs -ext WixToolset.Util.wixext -ext WixToolset.UI.wixext `
-			  -d BuildType=$BuildType -d ProductVersion=$ProductVersion -d ShortVer=$ShortVer -d SourceDir=$SourceDir -d Scope=$Scope 
+			  -d BuildType=$BuildType -d ProductVersion=$ProductVersion -d ShortVer=$ShortVer -d SourceDir=$SourceDir -d Scope=$Scope `
+              -d IconDir=$IconDir -d ConfigDir=$ConfigDir -d BitmapDir=$BitmapDir -d LicenseFile=$LicenseFile
 
     Write-Host "[ok]     $OutputMsi" -ForegroundColor Green
     return $OutputMsi
