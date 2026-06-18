@@ -25,7 +25,7 @@ AgentGateway/
     │   ├── sysctl.ico              # ARP / shortcut icon (Admin Console)
     │   └── user.ico                # ARP / shortcut icon (User)
     └── config/
-        └── gateway.ynl             # Default config
+        └── gateway.yml             # Default config
 ```
 
 ---
@@ -78,8 +78,6 @@ msiexec /i agentgateway-enduser-1.0.0.msi /qn
 .\increment-version.ps1 -Component major   # major:  1.0.0.0 -> 2.0.0.0
 .\increment-version.ps1 -Component build   # build:  1.0.0.0 -> 1.0.0.1
 
-# Also patch .csproj in one shot:
-.\increment-version.ps1 -CsprojPath ..\src\Goose.csproj -Component patch
 ```
 
 ### 5. Sign the MSI
@@ -137,7 +135,7 @@ Generate a fresh GUID with PowerShell:
 
 | File                 | Required size            | Notes                                                |
 |----------------------|--------------------------|------------------------------------------------------|
-| `icons/goose.ico`    | Any, ICO format          | Include 16, 32, 48, 256 px variants for best quality |
+| `icons/agentgateway.ico`    | Any, ICO format          | Include 16, 32, 48, 256 px variants for best quality |
 | `bitmaps/banner.bmp` | 493 × 58 px, 24-bit BMP  | Top banner strip shown in all dialogs                |
 | `bitmaps/dialog.bmp` | 493 × 312 px, 24-bit BMP | Left panel on Welcome / Exit dialogs                 |
 | `License.rtf`        | RTF format               | Displayed on the license acceptance screen           |
