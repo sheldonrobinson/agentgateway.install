@@ -1,169 +1,22 @@
 llm:
   port: 9000
-
   models:
-    # -------------------------
-    # Default model + routing + fallback
-    # -------------------------
-    - name: gpt-5.5-pro
-      provider: openAI
-      params:
-        model: gpt-5.5-pro
-        apiKey: ${OPENAI_API_KEY}
-      matches:
-        # analysis.*
-        - headers:
-            - name: X-Task
-              value:
-                exact: analysis
-          name: gemini-3.5-flash
-
-        # code.*
-        - headers:
-            - name: X-Task
-              value:
-                exact: code
-          name: gpt-5.5
-
-        # vision.*
-        - headers:
-            - name: X-Task
-              value:
-                exact: vision
-          name: gemini-3-flash-preview
-
-        # local.*
-        - headers:
-            - name: X-Task
-              value:
-                exact: local
-          name: gemma-4-26b-a4b-it
-
-        # Fallback chain
-        - headers: []
-          name: gpt-5.5
-        - headers: []
-          name: gpt-4.1
-        - headers: []
-          name: gemini-3.5-flash
-        - headers: []
-          name: gemma-4-26b-a4b-it
-
-
-
-    # -------------------------
-    # OpenAI Models
-    # -------------------------
-    - name: gpt-5.5
-      provider: openAI
-      params:
-        model: gpt-5.5
-        apiKey: ${OPENAI_API_KEY}
-
-    - name: gpt-4.1
-      provider: openAI
-      params:
-        model: gpt-4.1
-        apiKey: ${OPENAI_API_KEY}
-
-    - name: gpt-4.1-mini
-      provider: openAI
-      params:
-        model: gpt-4.1-mini
-        apiKey: ${OPENAI_API_KEY}
-
-    - name: gpt-4.1-nano
-      provider: openAI
-      params:
-        model: gpt-4.1-nano
-        apiKey: ${OPENAI_API_KEY}
-
-    - name: gpt-4o
-      provider: openAI
-      params:
-        model: gpt-4o
-        apiKey: ${OPENAI_API_KEY}
-
-    - name: gpt-4o-mini
-      provider: openAI
-      params:
-        model: gpt-4o-mini
-        apiKey: ${OPENAI_API_KEY}
-
-    # -------------------------
-    # Gemini Models
-    # -------------------------
-    - name: gemini-3.5-flash
-      provider: gemini
-      params:
-        model: gemini-3.5-flash
-        apiKey: ${GEMINI_API_KEY}
-
-    - name: gemini-3.1-pro-preview
-      provider: gemini
-      params:
-        model: gemini-3.1-pro-preview
-        apiKey: ${GEMINI_API_KEY}
-
-    - name: gemini-3-flash-preview
-      provider: gemini
-      params:
-        model: gemini-3-flash-preview
-        apiKey: ${GEMINI_API_KEY}
-
-    - name: gemini-3.1-flash-lite
-      provider: gemini
-      params:
-        model: gemini-3.1-flash-lite
-        apiKey: ${GEMINI_API_KEY}
-
-    # -------------------------
-    # Local OpenAI-compatible models
-    # -------------------------
-    - name: gemma-4-26b-a4b-it
-      provider: openAI
-      params:
-        model: gemma-4-26b-a4b-it
-        apiKey: "none"
-        hostOverride: "localhost:11434"
-        pathPrefix: /v1
-
-    - name: gemma-4-12b-it
-      provider: openAI
-      params:
-        model: gemma-4-12b-it
-        apiKey: "none"
-        hostOverride: "localhost:11434"
-        pathPrefix: /v1
-
-    - name: gemma-4-e4b-it
-      provider: openAI
-      params:
-        model: gemma-4-e4b-it
-        apiKey: "none"
-        hostOverride: "localhost:11434"
-        pathPrefix: /v1
-
-    - name: gemma-4-e2b-it
-      provider: openAI
-      params:
-        model: gemma-4-e2b-it
-        apiKey: "none"
-        hostOverride: "localhost:11434"
-        pathPrefix: /v1
-
-logging:
-  level: info
-  format: json
-
-
+  - name: '*'
+    provider: openAI
+    params:
+      apiKey: none
+      hostOverride: localhost:11434
 binds:
 - port: 15010
   listeners:
   - protocol: HTTP
     name: listener
     routes:
-    - backends:
+    - hostnames: []
+      matches:
+      - path:
+          pathPrefix: /
+      backends:
       - mcp:
           targets:
           - name: mcp-registry
@@ -212,7 +65,7 @@ binds:
               schema:
                 url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/date-nager-api-v3.json
           statefulMode: stateless
-      name: registry
+      name: services
       policies:
         cors:
           allowOrigins:
@@ -254,7 +107,11 @@ binds:
   - protocol: HTTP
     name: listener
     routes:
-    - backends:
+    - hostnames: []
+      matches:
+      - path:
+          pathPrefix: /
+      backends:
       - mcp:
           targets:
           - name: books
@@ -284,7 +141,7 @@ binds:
               host: https://api.tvmaze.com
           statefulMode: stateless
           prefixMode: always
-      name: culture
+      name: media
       policies:
         cors:
           allowOrigins:
