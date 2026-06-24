@@ -1,22 +1,58 @@
 llm:
-  port: 9000
+  port: 4000
   models:
-  - name: '*'
-    provider: openAI
+  - name: smart
+    visibility: public
+    provider:
+      reference: euc
     params:
-      apiKey: none
-      hostOverride: localhost:11434
+      model: gemma-4-26b-a4b
+  - name: fast
+    visibility: public
+    provider:
+      reference: euc
+    params:
+      model: gemma-4-e2b
+  - name: '*'
+    provider:
+      reference: euc
+  providers:
+  - name: euc
+    provider:
+      custom:
+        formats:
+        - type: completions
+        - type: responses
+    params:
+      baseUrl: http://localhost:11434/v1
+  policies:
+    guardrails:
+      request:
+      - regex:
+          action: mask
+          rules:
+          - builtin: email
+          - builtin: phoneNumber
+          - builtin: creditCard
+          - builtin: ssn
+          - builtin: caSin
+    cors:
+      allowOrigins:
+      - '*'
+      allowMethods:
+      - '*'
+      allowHeaders:
+      - '*'
+      exposeHeaders:
+      - mcp-session-id
+      - x-request-id
 binds:
-- port: 15010
+- port: 3010
   listeners:
   - protocol: HTTP
     name: listener
     routes:
-    - hostnames: []
-      matches:
-      - path:
-          pathPrefix: /
-      backends:
+    - backends:
       - mcp:
           targets:
           - name: mcp-registry
@@ -65,6 +101,7 @@ binds:
               schema:
                 url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/date-nager-api-v3.json
           statefulMode: stateless
+          prefixMode: always
       name: services
       policies:
         cors:
@@ -74,7 +111,7 @@ binds:
           - '*'
           exposeHeaders:
           - Mcp-Session-Id
-- port: 15011
+- port: 3011
   listeners:
   - protocol: HTTP
     name: listener
@@ -93,6 +130,7 @@ binds:
               schema:
                 url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/jobrise.json
           statefulMode: stateless
+          prefixMode: always
       name: careers
       policies:
         cors:
@@ -102,23 +140,14 @@ binds:
           - '*'
           exposeHeaders:
           - Mcp-Session-Id
-- port: 15012
+- port: 3012
   listeners:
   - protocol: HTTP
     name: listener
     routes:
-    - hostnames: []
-      matches:
-      - path:
-          pathPrefix: /
-      backends:
+    - backends:
       - mcp:
           targets:
-          - name: books
-            openapi:
-              schema:
-                url: https://openlibrary.org/static/openapi.json
-              host: https://openlibrary.org
           - name: met-museum
             openapi:
               schema:
@@ -150,3 +179,67 @@ binds:
           - '*'
           exposeHeaders:
           - Mcp-Session-Id
+- port: 3013
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: nameday
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/nameday.json
+              host: https://nameday.abalin.net/api
+          - name: sportsdb
+            openapi:
+              schema:
+                url: https://www.thesportsdb.com/api/spec/v2/openapi.yaml
+              host: https://www.thesportsdb.com/api/v2/json
+          statefulMode: stateless
+          prefixMode: always
+      name: culture
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+mcp:
+  port: 3000
+  targets:
+  - name: services
+    mcp:
+      host: http://localhost:3010/mcp
+  - name: careers
+    mcp:
+      host: http://localhost:3011/mcp
+  - name: media
+    mcp:
+      host: http://localhost:3012/mcp
+  - name: culture
+    mcp:
+      host: http://localhost:3013/mcp
+  policies:
+    cors:
+      allowOrigins:
+      - '*'
+      - http://localhost:15000
+      allowMethods:
+      - '*'
+      - GET
+      - POST
+      allowHeaders:
+      - '*'
+      exposeHeaders:
+      - Mcp-Session-Id
+  statefulMode: stateless
+  prefixMode: always
+  failureMode: failClosed
+config:
+  logging:
+    level: info
+    format: json
