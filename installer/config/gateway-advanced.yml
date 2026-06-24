@@ -1,0 +1,948 @@
+llm:
+  port: 4000
+  models:
+  - name: deepseek-v4-pro-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: deepseek-ai/deepseek-v4-pro
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      chat_template_kwargs:
+        thinking: true
+        reasoning_effort: high
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: deepseek-v4-pro-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: deepseek-ai/deepseek-v4-pro
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      chat_template_kwargs:
+        thinking: true
+        reasoning_effort: high
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: deepseek-v4-pro-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: deepseek-ai/deepseek-v4-pro
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      chat_template_kwargs:
+        thinking: true
+        reasoning_effort: high
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: kimi-k2.6-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: moonshotai/kimi-k2.6
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: kimi-k2.6-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: moonshotai/kimi-k2.6
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: kimi-k2.6-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: moonshotai/kimi-k2.6
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: glm-5.1-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: z-ai/glm-5.1
+    defaults:
+      max_tokens: 8192
+      max_completion_tokens: 65536
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: glm-5.1-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: z-ai/glm-5.1
+    defaults:
+      max_tokens: 8192
+      max_completion_tokens: 65536
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: glm-5.1-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: z-ai/glm-5.1
+    defaults:
+      max_tokens: 8192
+      max_completion_tokens: 65536
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: mistral-large-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: mistralai/mistral-large-3-675b-instruct-2512
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: mistral-large-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: mistralai/mistral-large-3-675b-instruct-2512
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: mistral-large-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: mistralai/mistral-large-3-675b-instruct-2512
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: nemotron-3-ultra-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: nvidia/nemotron-3-ultra-550b-a55b
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      chat_template_kwargs:
+        enable_thinking: true
+        reasoning_budget: 65536
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: nemotron-3-ultra-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: nvidia/nemotron-3-ultra-550b-a55b
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      chat_template_kwargs:
+        enable_thinking: true
+        reasoning_budget: 65536
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: nemotron-3-ultra-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: nvidia/nemotron-3-ultra-550b-a55b
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      chat_template_kwargs:
+        enable_thinking: true
+        reasoning_budget: 65536
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: minimax-m3-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: minimaxai/minimax-m3
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: minimax-m3-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: minimaxai/minimax-m3
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: minimax-m3-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: minimaxai/minimax-m3
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: deepseek-v4-flash-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: deepseek-ai/deepseek-v4-flash
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      extra_body:
+        chat_template_kwargs:
+          thinking: true
+          reasoning_effort: high
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: deepseek-v4-flash-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: deepseek-ai/deepseek-v4-flash
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      extra_body:
+        chat_template_kwargs:
+          thinking: true
+          reasoning_effort: high
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: deepseek-v4-flash-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: deepseek-ai/deepseek-v4-flash
+    defaults:
+      max_tokens: 65536
+      max_completion_tokens: 262144
+      extra_body:
+        chat_template_kwargs:
+          thinking: true
+          reasoning_effort: high
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: step-3.7-flash-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: stepfun-ai/step-3.7-flash
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: step-3.7-flash-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: stepfun-ai/step-3.7-flash
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: step-3.7-flash-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: stepfun-ai/step-3.7-flash
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: gemini-3.5-flash
+    visibility: internal
+    provider:
+      reference: google
+    params:
+      model: gemini-3.5-flash
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || has(json(response.body).error)
+    defaults:
+      max_tokens: 65536
+  - name: gemini-3.1-pro-preview
+    visibility: internal
+    provider:
+      reference: google
+    params:
+      model: gemini-3.1-pro-preview
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || has(json(response.body).error)
+    defaults:
+      max_tokens: 65536
+  - name: gemini-3.1-flash-lite
+    visibility: internal
+    provider:
+      reference: google
+    params:
+      model: gemini-3.1-flash-lite
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || has(json(response.body).error)
+    defaults:
+      max_tokens: 65536
+  - name: gemini-2.5-flash-lite
+    visibility: internal
+    provider:
+      reference: google
+    params:
+      model: gemini-2.5-flash-lite
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || has(json(response.body).error)
+    defaults:
+      max_tokens: 65536
+  - name: mistral-medium
+    visibility: public
+    provider:
+      reference: nvidia
+    params:
+      model: mistralai/mistral-medium-3.5-128b
+    defaults:
+      max_tokens: 16384
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429
+  - name: mistral-small
+    visibility: public
+    provider:
+      reference: nvidia
+    params:
+      model: mistralai/mistral-small-4-119b-2603
+    defaults:
+      max_tokens: 16384
+      chat_template_kwargs:
+        enable_thinking: true
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429
+  - name: nemotron-3-nano
+    visibility: public
+    provider:
+      reference: nvidia
+    params:
+      model: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+    defaults:
+      max_tokens: 65536
+      chat_template_kwargs:
+        enable_thinking: true
+        reasoning_budget: 16384
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429
+  - name: gemma-4-31b
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: google/gemma-4-31b-it
+    defaults:
+      max_tokens: 65536
+      chat_template_kwargs:
+        enable_thinking: true
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429
+  - name: gemma-4-26b-a4b
+    visibility: internal
+    provider:
+      reference: euc
+    params:
+      model: gemma-4-26b-a4b
+  - name: fast
+    visibility: public
+    provider:
+      reference: euc
+    params:
+      model: gemma-4-e2b
+  - name: '*'
+    provider:
+      reference: euc
+  virtualModels:
+  - name: deepseek-v4-pro
+    routing:
+      weighted:
+        targets:
+        - model: deepseek-v4-pro-default
+          weight: 10
+        - model: deepseek-v4-pro-alternate-1
+          weight: 10
+        - model: deepseek-v4-pro-alternate-2
+          weight: 10
+  - name: kimi-k2.6
+    routing:
+      weighted:
+        targets:
+        - model: kimi-k2.6-default
+          weight: 10
+        - model: kimi-k2.6-alternate-1
+          weight: 10
+        - model: kimi-k2.6-alternate-2
+          weight: 10
+  - name: minimax-m3
+    routing:
+      weighted:
+        targets:
+        - model: minimax-m3-default
+          weight: 10
+        - model: minimax-m3-alternate-1
+          weight: 10
+        - model: minimax-m3-alternate-2
+          weight: 10
+  - name: glm-5.1
+    routing:
+      weighted:
+        targets:
+        - model: glm-5.1-default
+          weight: 10
+        - model: glm-5.1-alternate-1
+          weight: 10
+        - model: glm-5.1-alternate-2
+          weight: 10
+  - name: deepseek-v4-flash
+    routing:
+      weighted:
+        targets:
+        - model: deepseek-v4-flash-default
+          weight: 10
+        - model: deepseek-v4-flash-alternate-1
+          weight: 10
+        - model: deepseek-v4-flash-alternate-2
+          weight: 10
+  - name: mistral-large
+    routing:
+      weighted:
+        targets:
+        - model: mistral-large-default
+          weight: 10
+        - model: mistral-large-alternate-1
+          weight: 10
+        - model: mistral-large-alternate-2
+          weight: 10
+  - name: nemotron-3-ultra
+    routing:
+      weighted:
+        targets:
+        - model: nemotron-3-ultra-default
+          weight: 10
+        - model: nemotron-3-ultra-alternate-1
+          weight: 10
+        - model: nemotron-3-ultra-alternate-2
+          weight: 10
+  - name: step-3.7-flash
+    routing:
+      weighted:
+        targets:
+        - model: step-3.7-flash-default
+          weight: 10
+        - model: step-3.7-flash-alternate-1
+          weight: 10
+        - model: step-3.7-flash-alternate-2
+          weight: 10
+  - name: gemini-pro
+    routing:
+      failover:
+        targets:
+        - model: gemini-3.5-flash
+          priority: 0
+        - model: gemini-3.1-pro-preview
+          priority: 0
+  - name: gemini-lite
+    routing:
+      failover:
+        targets:
+        - model: gemini-3.1-flash-lite
+          priority: 0
+        - model: gemini-2.5-flash-lite
+          priority: 0
+  - name: gemini
+    routing:
+      failover:
+        targets:
+        - model: gemini-3.5-flash
+          priority: 0
+        - model: gemini-3.1-pro-preview
+          priority: 0
+        - model: gemini-3.1-flash-lite
+          priority: 1
+        - model: gemini-2.5-flash-lite
+          priority: 1
+  - name: lite
+    routing:
+      failover:
+        targets:
+        - model: nemotron-3-nano
+          priority: 0
+        - model: gemma-4-31b
+          priority: 0
+        - model: gemma-4-26b-a4b
+          priority: 1
+  providers:
+  - name: euc
+    provider:
+      custom:
+        formats:
+        - type: completions
+        - type: responses
+    params:
+      baseUrl: http://localhost:11434/v1
+  - name: google
+    provider: gemini
+    params:
+      apiKey: $GEMINI_API_KEY
+  - name: nvidia
+    provider:
+      custom:
+        formats:
+        - type: completions
+    params:
+      apiKey: $NVIDIA_API_KEY
+      baseUrl: https://integrate.api.nvidia.com
+  - name: nvidia-alternate-1
+    provider:
+      custom:
+        formats:
+        - type: completions
+    params:
+      apiKey: $NVIDIA_ALT1_API_KEY
+      baseUrl: https://integrate.api.nvidia.com
+  - name: nvidia-alternate-2
+    provider:
+      custom:
+        formats:
+        - type: completions
+    params:
+      apiKey: $NVIDIA_ALT2_API_KEY
+      baseUrl: https://integrate.api.nvidia.com
+  - name: openai
+    provider: openai
+    params:
+      apiKey: $OPENAI_API_KEY
+  - name: anthropic
+    provider: anthropic
+  - name: deepseek
+    provider: deepseek
+    params:
+      apiKey: $DEEPSEEK_API_KEY
+  policies:
+    guardrails:
+      request:
+      - regex:
+          action: mask
+          rules:
+          - builtin: email
+          - builtin: phoneNumber
+          - builtin: creditCard
+          - builtin: ssn
+          - builtin: caSin
+    cors:
+      allowOrigins:
+      - '*'
+      - http://localhost:15000
+      allowMethods:
+      - '*'
+      - GET
+      - POST
+      allowHeaders:
+      - '*'
+      exposeHeaders:
+      - mcp-session-id
+      - x-request-id
+binds:
+- port: 3010
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: mcp-registry
+            openapi:
+              host: https://registry.modelcontextprotocol.io
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/mcp-registry-api.json
+          - name: countries
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/countries.json
+              host: https://restcountries.com
+          - name: country-is
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/country-is.json
+              host: https://api.country.is/
+          - name: ip-geolocation
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/ipapi-is.json
+              host: https://api.ipapi.is
+          - name: my-ip
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/myip-com.json
+              host: https://api.myip.com
+          - name: surise-sunset
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/sunrise-sunset.json
+              host: https://api.sunrise-sunset.org
+          - name: uv-index
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/current-uv-index.json
+              host: https://currentuvindex.com/api/v1
+          - name: weather
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/open-meteo.json
+              host: https://api.open-meteo.com
+          - name: holidays
+            openapi:
+              host: https://date.nager.at
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/date-nager-api-v3.json
+          statefulMode: stateless
+          prefixMode: always
+      name: services
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 3011
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: jobicy
+            openapi:
+              host: https://jobicy.com
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/jobicy.json
+          - name: jobrise
+            openapi:
+              host: https://api.jobrise.io
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/jobrise.json
+          statefulMode: stateless
+          prefixMode: always
+      name: careers
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 3012
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: met-museum
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/metmuseum.json
+              host: https://collectionapi.metmuseum.org/public/collection/v1
+          - name: musicbrainz
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/musicbrainz.json
+              host: https://musicbrainz.org/ws/2
+          - name: song-lyrics
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/lrclib.json
+              host: https://lrclib.net
+          - name: tv-movies
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/tvmaze-com.json
+              host: https://api.tvmaze.com
+          statefulMode: stateless
+          prefixMode: always
+      name: media
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+- port: 3013
+  listeners:
+  - protocol: HTTP
+    name: listener
+    routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: nameday
+            openapi:
+              schema:
+                url: https://raw.githubusercontent.com/sheldonrobinson/studious-sniffle/refs/heads/main/openapi/nameday.json
+              host: https://nameday.abalin.net/api
+          - name: sportsdb
+            openapi:
+              schema:
+                url: https://www.thesportsdb.com/api/spec/v2/openapi.yaml
+              host: https://www.thesportsdb.com/api/v2/json
+          statefulMode: stateless
+          prefixMode: always
+      name: culture
+      policies:
+        cors:
+          allowOrigins:
+          - '*'
+          allowHeaders:
+          - '*'
+          exposeHeaders:
+          - Mcp-Session-Id
+mcp:
+  port: 3000
+  targets:
+  - name: services
+    mcp:
+      host: http://localhost:3010/mcp
+  - name: careers
+    mcp:
+      host: http://localhost:3011/mcp
+  - name: media
+    mcp:
+      host: http://localhost:3012/mcp
+  - name: culture
+    mcp:
+      host: http://localhost:3013/mcp
+  policies:
+    cors:
+      allowOrigins:
+      - '*'
+      - http://localhost:15000
+      allowMethods:
+      - '*'
+      - GET
+      - POST
+      allowHeaders:
+      - '*'
+      exposeHeaders:
+      - Mcp-Session-Id
+  statefulMode: stateless
+  prefixMode: always
+  failureMode: failClosed
+config:
+  logging:
+    level: debug
+    format: json
+  modelCatalog:
+  - file: base-costs.json
