@@ -280,7 +280,9 @@
 				<util:InternetShortcut Id="WebsiteStartMenuShortcut"
 				                       Name="AgentGateway Admin UI"
 				                       Target="http://localhost:15000/ui"
-				                       Type="url" />
+				                       Type="url" 
+                                       Icon="StartIcon"
+                                       IconIndex="0"/>
 				<?if $(BuildType) = "System" ?>
 				<!-- Start LLM Proxy startmenu shortcut -->
 				<Shortcut Id="StartServiceStartMenuShortcut"
@@ -394,6 +396,21 @@
 				             Permanent="no"
 				             Action="create"/>
 					<?endif ?>
+               <?if $(BuildType) = "Machine" ?>
+				<RegistryValue Root="HKLM"
+				               Key="SOFTWARE\Konnek\agentgateway"
+				               Name="xdspath"
+				               Type="string"
+				               Value="%PROGRAMDATA%\Konnek\agentgateway\gateway.yml"
+				               KeyPath="yes"/>
+				<?else ?>
+				<RegistryValue Root="HKCU"
+				               Key="SOFTWARE\Konnek\agentgateway"
+				               Name="xdspath"
+				               Type="string"
+				               Value="%APPDATA%\Konnek\agentgateway\gateway.yml"
+				               KeyPath="yes"/>
+				<?endif ?>
 			</Component>
 		</DirectoryRef>
 	</Fragment>
