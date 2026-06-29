@@ -401,15 +401,13 @@
 				               Key="SOFTWARE\Konnek\agentgateway"
 				               Name="xdspath"
 				               Type="string"
-				               Value="%PROGRAMDATA%\Konnek\agentgateway\gateway.yml"
-				               KeyPath="yes"/>
+				               Value="%PROGRAMDATA%\Konnek\agentgateway\gateway.yml"/>
 				<?else ?>
 				<RegistryValue Root="HKCU"
 				               Key="SOFTWARE\Konnek\agentgateway"
 				               Name="xdspath"
 				               Type="string"
-				               Value="%APPDATA%\Konnek\agentgateway\gateway.yml"
-				               KeyPath="yes"/>
+				               Value="%APPDATA%\Konnek\agentgateway\gateway.yml"/>
 				<?endif ?>
 			</Component>
 		</DirectoryRef>
