@@ -281,7 +281,7 @@
 				                       Name="AgentGateway Admin UI"
 				                       Target="http://localhost:15000/ui"
 				                       Type="url" 
-                                       IconFile="StartIcon"
+                                       IconFile="AgentGatewayIcon"
                                        IconIndex="0"/>
 				<?if $(BuildType) = "System" ?>
 				<!-- Start LLM Proxy startmenu shortcut -->

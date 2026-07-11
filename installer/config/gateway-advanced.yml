@@ -1,6 +1,54 @@
 llm:
   port: 4000
   models:
+  - name: glm-5.2-default
+    visibility: internal
+    provider:
+      reference: nvidia
+    params:
+      model: z-ai/glm-5.2
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: glm-5.2-alternate-1
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-1
+    params:
+      model: z-ai/glm-5.2
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
+  - name: glm-5.2-alternate-2
+    visibility: internal
+    provider:
+      reference: nvidia-alternate-2
+    params:
+      model: z-ai/glm-5.2
+    defaults:
+      max_tokens: 16384
+      max_completion_tokens: 131072
+    health:
+      eviction:
+        duration: 60s
+        consecutiveFailures: 1
+        healthThreshold: 0.5
+        restoreHealth: 1
+      unhealthyExpression: response.code >= 500 || response.code == 429 || json(response.body).status == 429
   - name: deepseek-v4-pro-default
     visibility: internal
     provider:
@@ -558,6 +606,16 @@ llm:
     provider:
       reference: euc
   virtualModels:
+  - name: glm-5.2
+    routing:
+      weighted:
+        targets:
+        - model: glm-5.2-default
+          weight: 10
+        - model: glm-5.2-alternate-1
+          weight: 10
+        - model: glm-5.2-alternate-2
+          weight: 10
   - name: deepseek-v4-pro
     routing:
       weighted:
