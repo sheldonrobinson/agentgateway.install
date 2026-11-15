@@ -93,6 +93,7 @@ $shortVer = ($fullVersion -split '\.')[ 0..2 ] -join '.'
 
 $ghRepo      = "agentgateway/agentgateway"
 $downloadUrl = "https://github.com/{0}/releases/download/v{1}/agentgateway-windows-amd64.exe" -f $ghRepo, $shortVer # URL of the ZIP file
+$downloadCliUrl = "https://github.com/{0}/releases/download/v{1}/agctl-windows-amd64.exe" -f $ghRepo, $shortVer # URL of the ZIP file
 
 Write-Host ""
 Write-Host "=======================================" -ForegroundColor Cyan
@@ -120,8 +121,10 @@ function Download-Executable {
 	# --- CONFIGURATION ---
 	 param(
 		[string]$exeUrl,   		# URL of the ZIP file
+        [string]$cliUrl,   		# URL of the ZIP file
 		[string]$targetFolder,  # Final destination
-		[string]$exeFileName    # Filename of the executable
+		[string]$exeFileName,    # Filename of the executable
+        [string]$cliFileName    # Filename of the executable
 	)
 
 	# clean target
@@ -133,10 +136,12 @@ function Download-Executable {
 		New-Item -Path $targetFolder -ItemType Directory -Force | Out-Null
 		
 		$outFile = Join-Path $targetFolder $exeFileName
+        $cliFile = Join-Path $targetFolder $cliFileName
 		
 		# Download Exe
 		Write-Host "Downloading Executable from $exeUrl ..."
 		Invoke-WebRequest -Uri $exeUrl -OutFile $outFile -UseBasicParsing
+        Invoke-WebRequest -Uri $cliUrl -OutFile $cliFile -UseBasicParsing
 
 		Write-Host "Download complete."
 
@@ -228,8 +233,10 @@ function Invoke-Sign {
 $built = @()
 
 Download-Executable -exeUrl $downloadURL `
+                    -cliUrl $downloadCliUrl `
 				    -targetFolder $SourceDir `
 				    -exeFileName "agentgateway.exe"
+                    -cliFileName "agctl.exe"
 
 if (-not (Test-Path $SourceDir)) {
     throw "SourceDir not found: $SourceDir`nBuild agentgateway.exe first, or pass -SourceDir."

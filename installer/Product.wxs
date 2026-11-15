@@ -193,6 +193,10 @@
 				      Source="$(SourceDir)\agentgateway.exe"
 				      KeyPath="yes"
 				      Checksum="yes"/>
+                <File Id="AgCtl_exe"
+				      Name="agctl.exe"
+					  Source="$(SourceDir)\agctl.exe"
+				      Checksum="yes"/>
 			</Component>
 			<Component Id="RegistryEntry"
 			           Guid="DCF46890-9DEF-4E12-BED7-9DBB8F9F797A">
